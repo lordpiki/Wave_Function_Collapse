@@ -5,20 +5,21 @@ LEFT = 2
 UP = 3
 
 class Tile (object):
-    def __init__(self, x, y, img):
-        self.pos = (x, y)
+    def __init__(self, img):
         self.img = img
-        self.entropy = 0
         # list of possible neighbors, in order of right, down, left, up
         # each element is a list of indexes, where the indexes represent the images of possible neighbors
         self.possible_neighbors = [[], [], [], []]
 
     
-    def calculate_entropy(self):
-        pass
-    
-    def calculate_possible_neighbors(self):
-        pass
+
+    def calculate_possible_neighbors(self, tiles):
+        # iterate through all the tiles
+        for i, tile in enumerate(tiles):
+            # check if the tile can be a neighbor in any direction
+            for direction in range(4):
+                if self.can_be_neighbor(tile, direction):
+                    self.possible_neighbors[direction].append(i)
 
     def can_be_neighbor(self, other, direction):
         # the tiles can be neighbors if the right column if the right column of the left tile is the same as the left column of the right tile

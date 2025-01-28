@@ -1,8 +1,16 @@
 import pygame
 import sys
+from grid import Grid
+black_image = pygame.Surface((3, 3))
+white_image = pygame.Surface((3, 3))
+black_image.fill((0, 0, 0))
+white_image.fill((255, 255, 255))
+images = []
 
-def render(grid: list, scale: int = 40):
+
+def render(grid_obj: Grid, scale: int = 40):
     pygame.init()
+    grid = grid_obj.grid
     screen = pygame.display.set_mode((len(grid[0]) * scale, len(grid) * scale))
     while True:
         for event in pygame.event.get():
@@ -12,7 +20,11 @@ def render(grid: list, scale: int = 40):
         # the grid contains tiles, which contain images
         for y in range(len(grid)):
             for x in range(len(grid[y])):
-                screen.blit(pygame.transform.scale(grid[y][x].img, (scale, scale)), (x*scale, y*scale))
+                if grid[y][x].collapsed:
+                    screen.blit(pygame.transform.scale(grid_obj.get_tiles()[grid[y][x].options[0]].img, (scale, scale)), (x*scale, y*scale))
+                else:
+                    # draw black image
+                    screen.blit(pygame.transform.scale(white_image, (scale, scale)), (x*scale, y*scale))
                 # draw the grid lines
                 pygame.draw.rect(screen, (0, 0, 0), (x*scale, y*scale, scale, scale), 1)
         pygame.display.update()
@@ -30,9 +42,6 @@ def load_image(path):
     img_surface = pygame.Surface((9, 9))
     img_surface.blit(img, (0, 0))
     img_pixels = pygame.PixelArray(img_surface)
-
-    # Store 3x3 grids
-    images = []
 
     # Iterate through every possible 3x3 grid
     for y in range(9):

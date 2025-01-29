@@ -33,8 +33,8 @@ def render(grid_obj: Grid, scale: int = 50):
                     text = font.render(str(grid[y][x].calculate_entropy()), True, (0, 255, 255))
                     # text = font.render(str(x+y*20), True, (0, 255, 255))
                     screen.blit(text, (x*scale, y*scale))
-                # draw the grid lines
-                pygame.draw.rect(screen, (255, 255, 255), (x*scale, y*scale, scale, scale), 1)
+                    # draw the grid lines
+                    pygame.draw.rect(screen, (255, 255, 255), (x*scale, y*scale, scale, scale), 1)
 
         pygame.display.update()
         # pygame.time.delay(100)

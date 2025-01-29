@@ -19,7 +19,7 @@ class Cell(object):
 
 class Grid(object):
     def __init__(self):
-        self.tiles = self.load_tiles("City.png")
+        self.tiles = self.load_tiles("Chess.png")
         # set an empty 20x20 grid of tiles
         self.size = 20
         self.grid = [[Cell(x, y, []) for x in range(self.size)] for y in range(self.size)]

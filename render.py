@@ -27,7 +27,7 @@ def render(grid_obj: Grid, scale: int = 50):
                     screen.blit(pygame.transform.scale(grid_obj.get_tiles()[grid[y][x].options[0]].img, (scale, scale)), (x*scale, y*scale))
                 else:
                     # draw black image
-                    screen.blit(pygame.transform.scale(black_image, (scale, scale)), (x*scale, y*scale))
+                    screen.blit(pygame.transform.scale(calculate_avg_color(grid[y][x].options, grid_obj.tiles), (scale, scale)), (x*scale, y*scale))
                     # display the entropy of the cell
                     font = pygame.font.Font(None, 36)
                     text = font.render(str(grid[y][x].calculate_entropy()), True, (0, 255, 255))
@@ -41,7 +41,20 @@ def render(grid_obj: Grid, scale: int = 50):
         # reduce the entropy of the grid
         if collapsed_cell is not None:
             grid_obj.reduce_entropy(collapsed_cell)
-        # grid_obj.wfc()
+        grid_obj.wfc()
+
+def calculate_avg_color(options, tiles) -> pygame.Surface:
+    # create a 3x3 image
+    img = pygame.Surface((3, 3))
+    for y in range(3):
+        for x in range(3):
+            # get the color of the pixel
+            color = (0, 0, 0)
+            for tile_index in options:
+                color = (color[0] + tiles[tile_index].img.get_at((x, y))[0], color[1] + tiles[tile_index].img.get_at((x, y))[1], color[2] + tiles[tile_index].img.get_at((x, y))[2])
+            color = (color[0] // len(options), color[1] // len(options), color[2] // len(options))
+            img.set_at((x, y), color)
+    return img
 
 
 def load_image(path):
@@ -66,8 +79,8 @@ def load_image(path):
             for dy in range(3):
                 for dx in range(3):
                     # Wrap around using modular arithmetic
-                    wrapped_x = (x + dx) % 12
-                    wrapped_y = (y + dy) % 12
+                    wrapped_x = (x + dx) % img.get_width()
+                    wrapped_y = (y + dy) % img.get_height()
 
                     # Get the color from the wrapped coordinates
                     color = img_pixels[wrapped_x, wrapped_y]

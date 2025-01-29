@@ -2,7 +2,7 @@ import render as renderer
 from tile import *
 import random
 # random.seed(1)
-MAX_ENTROPY = 81
+
 
 class Cell(object):
     
@@ -19,7 +19,7 @@ class Cell(object):
 
 class Grid(object):
     def __init__(self):
-        self.tiles = self.load_tiles("ColoredCity.png")
+        self.tiles = self.load_tiles("City.png")
         # set an empty 20x20 grid of tiles
         self.size = 20
         self.grid = [[Cell(x, y, []) for x in range(self.size)] for y in range(self.size)]
@@ -85,7 +85,7 @@ class Grid(object):
         # Repeat until all cells are collapsed
 
         # Getting a list of all the cells with the lowest entropy
-        lowest_entropy = MAX_ENTROPY
+        lowest_entropy = len(self.tiles)
         lowest_entropy_cells = []
         for y in range(self.size):
             for x in range(self.size):
@@ -176,8 +176,8 @@ class Grid(object):
 if __name__ == "__main__":
     grid = Grid()   
     # grid.test_tile_neighbors(10)
-    grid.showcase_base_img()    
-    # grid.reset_grid()
+    # grid.showcase_base_img()    
+    grid.reset_grid()
 
     # grid.wfc()
     grid.render()   

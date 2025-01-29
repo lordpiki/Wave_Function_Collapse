@@ -11,6 +11,7 @@ class Cell(object):
         self.y = y
         self.collapsed = False
         self.options = options
+        self.checked = False
 
     def calculate_entropy(self):
         return len(self.options)
@@ -18,7 +19,7 @@ class Cell(object):
 
 class Grid(object):
     def __init__(self):
-        self.tiles = self.load_tiles("Water.png")
+        self.tiles = self.load_tiles("ColoredCity.png")
         # set an empty 20x20 grid of tiles
         self.size = 20
         self.grid = [[Cell(x, y, []) for x in range(self.size)] for y in range(self.size)]
@@ -26,6 +27,12 @@ class Grid(object):
     def load_tiles(self, path):
         images = renderer.load_image(path)
         tiles = [Tile(img) for img in images]
+        # go over all the tiles, if 2 tiles have the same image, then increase the frequency of the first tile and remove the second tile
+        for tile in tiles:
+            for other_tile in tiles:
+                if renderer.identical(tile.img, other_tile.img) and tile != other_tile:
+                    tile.frequency += 1
+                    tiles.remove(other_tile)
         for index, tile in enumerate(tiles):
             tile.calculate_possible_neighbors(tiles)
         return tiles
@@ -88,6 +95,8 @@ class Grid(object):
                 entropy = cell.calculate_entropy()
                 if entropy == 1:
                     cell.collapsed = True
+                    cell.options = [cell.options[0]]
+                    self.reduce_entropy(cell)
                 if entropy == 0:
                     print("Error: Entropy is 0")
                     # reset the grid and try again
@@ -104,16 +113,47 @@ class Grid(object):
         if len(lowest_entropy_cells) > 0:
             picked_cell = random.choice(lowest_entropy_cells)
             picked_cell.collapsed = True
-            picked_cell.options = [random.choice(picked_cell.options)]
+            tiles_frequencies = [self.tiles[index].frequency for index in picked_cell.options]
+            # Give the tiles with the highest frequency a higher chance of being picked
+            picked_cell.options = [random.choices(picked_cell.options, weights=tiles_frequencies)[0]]
+            # picked_cell.options = [random.choice(picked_cell.options)]
 
 
-            # Update the entropy of the neighbors of the picked cell
-            for direction in range(4):
-                neighbor = self.get_neighbor(picked_cell.x, picked_cell.y, direction)
-                if neighbor is not None and neighbor.collapsed == False:
-                    # remove the options that are not possible
-                    neighbor.options = [option for option in neighbor.options if option in self.tiles[picked_cell.options[0]].get_possible_neighbors(direction)]
+            # Update the neighbors of the picked cell
+            # self.update_neighbors(picked_cell)
+            self.reduce_entropy(picked_cell)
+
+    def update_neighbors(self, cell):
+        for direction in range(4):
+            neighbor = self.get_neighbor(cell.x, cell.y, direction)
+            if neighbor is not None and neighbor.collapsed == False:
+                # remove the options that are not possible
+                neighbor.options = [option for option in neighbor.options if option in self.tiles[cell.options[0]].get_possible_neighbors(direction)]
+
+    def reduce_entropy(self, cell):
+        # check if the is collapsed or if the cell has already been checked
+        if cell.checked:
+            return
+        cell.checked = True
         
+
+        # reduce the entropy of the neighbors recursively
+        for direction in range(4):
+            # get the all the options of the neighbor's cell based on all the possible tiles of this cell
+            total_options = []
+            for tile_index in cell.options:
+                total_options += self.tiles[tile_index].possible_neighbors[direction]
+                
+            neighbor = self.get_neighbor(cell.x, cell.y, direction)
+            if neighbor is not None:
+                if not neighbor.collapsed:
+                    # remove the options that are not possible
+                    neighbor.options = [option for option in neighbor.options if option in total_options]
+
+                # neighbor.checked = True
+                self.reduce_entropy(neighbor)
+        
+
     def get_neighbor(self, x, y, direction) -> Cell:
         if direction == 0:
             if x + 1 < self.size:
@@ -136,8 +176,8 @@ class Grid(object):
 if __name__ == "__main__":
     grid = Grid()   
     # grid.test_tile_neighbors(10)
-    # grid.showcase_base_img()    
-    grid.reset_grid()
+    grid.showcase_base_img()    
+    # grid.reset_grid()
 
     # grid.wfc()
     grid.render()   

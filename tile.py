@@ -37,6 +37,7 @@ def rotate_image(mat):
 class Tile (object):
     def __init__(self, img):
         self.img = img
+        self.frequency = 1
         # list of possible neighbors, in order of right, down, left, up
         # each element is a list of indexes, where the indexes represent the images of possible neighbors
         self.possible_neighbors = [[], [], [], []]

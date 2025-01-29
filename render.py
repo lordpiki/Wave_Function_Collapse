@@ -8,7 +8,7 @@ white_image.fill((255, 255, 255))
 images = []
 
 
-def render(grid_obj: Grid, scale: int = 40):
+def render(grid_obj: Grid, scale: int = 50):
     pygame.init()
     grid = grid_obj.grid
     screen = pygame.display.set_mode((len(grid[0]) * scale, len(grid) * scale))
@@ -24,11 +24,18 @@ def render(grid_obj: Grid, scale: int = 40):
                     screen.blit(pygame.transform.scale(grid_obj.get_tiles()[grid[y][x].options[0]].img, (scale, scale)), (x*scale, y*scale))
                 else:
                     # draw black image
-                    screen.blit(pygame.transform.scale(white_image, (scale, scale)), (x*scale, y*scale))
+                    screen.blit(pygame.transform.scale(black_image, (scale, scale)), (x*scale, y*scale))
+                # display the entropy of the cell
+                font = pygame.font.Font(None, 36)
+                text = font.render(str(grid[y][x].calculate_entropy()), True, (0, 255, 255))
+                # text = font.render(str(x+y*20), True, (0, 255, 255))
+                screen.blit(text, (x*scale, y*scale))
+
                 # draw the grid lines
-                pygame.draw.rect(screen, (0, 0, 0), (x*scale, y*scale, scale, scale), 1)
+                pygame.draw.rect(screen, (255, 255, 255), (x*scale, y*scale, scale, scale), 1)
         pygame.display.update()
-        # pygame.time.delay(1000)
+        # pygame.time.delay(100)
+        grid_obj.wfc()
 
 
 def load_image(path):

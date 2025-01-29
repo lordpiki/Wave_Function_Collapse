@@ -1,7 +1,7 @@
 import render as renderer
 from tile import *
 import random
-
+# random.seed(1)
 MAX_ENTROPY = 81
 
 class Cell(object):
@@ -18,15 +18,15 @@ class Cell(object):
 
 class Grid(object):
     def __init__(self):
-        self.tiles = self.load_tiles("City.png")
+        self.tiles = self.load_tiles("Water.png")
         # set an empty 20x20 grid of tiles
-        self.grid = [[Cell(x, y, []) for x in range(20)] for y in range(20)]
         self.size = 20
+        self.grid = [[Cell(x, y, []) for x in range(self.size)] for y in range(self.size)]
 
     def load_tiles(self, path):
         images = renderer.load_image(path)
         tiles = [Tile(img) for img in images]
-        for tile in tiles:
+        for index, tile in enumerate(tiles):
             tile.calculate_possible_neighbors(tiles)
         return tiles
     
@@ -43,9 +43,28 @@ class Grid(object):
                 else:
                     self.grid[y][x].collapsed = True
                     self.grid[y][x].options = [x + y * self.size]
-
+        
+    
+    def test_tile_neighbors(self, tile_index):
+        tile = self.tiles[tile_index]
+        # make the tile the last tile in the grid
+        self.grid[19][19].collapsed = True
+        self.grid[19][19].options = [tile_index]
+        # iterate through all the possible neighbors
+        # set the grid of all the neighbors to the possible neighbors of the tile
+        # tile_neighbors = tile.get_possible_neighbors(UP)
+        # tile_neighbors = tile.get_possible_neighbors(DOWN)
+        tile_neighbors = tile.get_possible_neighbors(RIGHT)
+        # tile_neighbors = tile.get_possible_neighbors(LEFT)
+        
+        for y in range(self.size):
+            for x in range(self.size):
+                if x + y * self.size in tile_neighbors:
+                    self.grid[y][x].options = [x + y * self.size]
+                    self.grid[y][x].collapsed = True
+                
     def reset_grid(self):
-        self.grid = [[Cell(x, y, [index for index in range(len(self.tiles))]) for x in range(20)] for y in range(20)]
+        self.grid = [[Cell(x, y, [index for index in range(len(self.tiles))]) for x in range(self.size)] for y in range(self.size)]
 
 
     def get_tiles(self):
@@ -69,7 +88,12 @@ class Grid(object):
                 entropy = cell.calculate_entropy()
                 if entropy == 1:
                     cell.collapsed = True
-                    continue
+                if entropy == 0:
+                    print("Error: Entropy is 0")
+                    # reset the grid and try again
+                    self.reset_grid()
+                    self.render()
+                    return
                 if entropy < lowest_entropy:
                     lowest_entropy = entropy
                     lowest_entropy_cells = [cell]
@@ -78,19 +102,43 @@ class Grid(object):
         
         # Collapse a random cell from the list of cells with the lowest entropy
         if len(lowest_entropy_cells) > 0:
-            cell = lowest_entropy_cells[random.randint(0, len(lowest_entropy_cells) - 1)]
-            cell.collapsed = True
-            cell.options = [cell.options[random.randint(0, len(cell.options) - 1)]]
+            picked_cell = random.choice(lowest_entropy_cells)
+            picked_cell.collapsed = True
+            picked_cell.options = [random.choice(picked_cell.options)]
 
-        # Update the entropy of all the neighbors
-        # TODO: implement this
+
+            # Update the entropy of the neighbors of the picked cell
+            for direction in range(4):
+                neighbor = self.get_neighbor(picked_cell.x, picked_cell.y, direction)
+                if neighbor is not None and neighbor.collapsed == False:
+                    # remove the options that are not possible
+                    neighbor.options = [option for option in neighbor.options if option in self.tiles[picked_cell.options[0]].get_possible_neighbors(direction)]
+        
+    def get_neighbor(self, x, y, direction) -> Cell:
+        if direction == 0:
+            if x + 1 < self.size:
+                return self.grid[y][x + 1]
+        elif direction == 1:
+            if y + 1 < self.size:
+                return self.grid[y + 1][x]
+        elif direction == 2:
+            if x - 1 >= 0:
+                return self.grid[y][x - 1]
+        elif direction == 3:
+            if y - 1 >= 0:
+                return self.grid[y - 1][x]
+        return None
+
 
 
         
 
 if __name__ == "__main__":
     grid = Grid()   
+    # grid.test_tile_neighbors(10)
     # grid.showcase_base_img()    
     grid.reset_grid()
-    grid.wfc()
+
+    # grid.wfc()
     grid.render()   
+

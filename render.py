@@ -26,8 +26,11 @@ def render(grid_obj: Grid, scale: int = 50):
                     collapsed_cell = grid[y][x]
                     screen.blit(pygame.transform.scale(grid_obj.get_tiles()[grid[y][x].options[0]].img, (scale, scale)), (x*scale, y*scale))
                 else:
-                    # draw black image
-                    screen.blit(pygame.transform.scale(calculate_avg_color(grid[y][x].options, grid_obj.tiles), (scale, scale)), (x*scale, y*scale))
+                    # draw avg color of the cell
+                    try:
+                        screen.blit(pygame.transform.scale(calculate_avg_color(grid[y][x].options, grid_obj.tiles), (scale, scale)), (x*scale, y*scale))
+                    except:
+                        screen.blit(pygame.transform.scale(white_image, (scale, scale)), (x*scale, y*scale))
                     # display the entropy of the cell
                     font = pygame.font.Font(None, 36)
                     text = font.render(str(grid[y][x].calculate_entropy()), True, (0, 255, 255))
@@ -72,12 +75,13 @@ def load_image(path):
     # Iterate through every possible 3x3 grid
     for y in range(img.get_height()):
         for x in range(img.get_width()):
+            grid_len = 3
             # Create a new Surface for each 3x3 grid
-            grid_surface = pygame.Surface((3, 3))
+            grid_surface = pygame.Surface((grid_len, grid_len))
 
             # Fill the 3x3 grid with wrapped pixels
-            for dy in range(3):
-                for dx in range(3):
+            for dy in range(grid_len):
+                for dx in range(grid_len):
                     # Wrap around using modular arithmetic
                     wrapped_x = (x + dx) % img.get_width()
                     wrapped_y = (y + dy) % img.get_height()

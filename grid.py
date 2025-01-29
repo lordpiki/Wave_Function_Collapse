@@ -19,7 +19,7 @@ class Cell(object):
 
 class Grid(object):
     def __init__(self):
-        self.tiles = self.load_tiles("Chess.png")
+        self.tiles = self.load_tiles("ColoredCity.png")
         # set an empty 20x20 grid of tiles
         self.size = 20
         self.grid = [[Cell(x, y, []) for x in range(self.size)] for y in range(self.size)]
@@ -96,7 +96,7 @@ class Grid(object):
                 if entropy == 1:
                     cell.collapsed = True
                     cell.options = [cell.options[0]]
-                    self.reduce_entropy(cell)
+                    # self.reduce_entropy(cell)
                 if entropy == 0:
                     print("Error: Entropy is 0")
                     # reset the grid and try again
@@ -121,7 +121,7 @@ class Grid(object):
 
             # Update the neighbors of the picked cell
             # self.update_neighbors(picked_cell)
-            self.reduce_entropy(picked_cell)
+            self.reduce_entropy(picked_cell, 0)
 
     def update_neighbors(self, cell):
         for direction in range(4):
@@ -130,7 +130,9 @@ class Grid(object):
                 # remove the options that are not possible
                 neighbor.options = [option for option in neighbor.options if option in self.tiles[cell.options[0]].get_possible_neighbors(direction)]
 
-    def reduce_entropy(self, cell):
+    def reduce_entropy(self, cell, depth=0):
+        if depth > 10:
+            return
         # check if the is collapsed or if the cell has already been checked
         if cell.checked:
             return
@@ -151,7 +153,7 @@ class Grid(object):
                     neighbor.options = [option for option in neighbor.options if option in total_options]
 
                 # neighbor.checked = True
-                self.reduce_entropy(neighbor)
+                self.reduce_entropy(neighbor, depth + 1)
         
 
     def get_neighbor(self, x, y, direction) -> Cell:
